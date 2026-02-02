@@ -1,7 +1,10 @@
 package com.example.backend.controller;
 
 import com.example.backend.dto.UserDto;
+import com.example.backend.entity.User;
+import com.example.backend.mapper.UserMapper;
 import com.example.backend.service.UserService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,24 +22,31 @@ public class UserController {
 
     @GetMapping
     public ResponseEntity<List<UserDto>> getAllUsers(){
-        return ResponseEntity.ok(userService.getAllUsers());
+        List<UserDto> users = userService.getAllUsers()
+                .stream()
+                .map(UserMapper::toDto)
+                .toList();
+
+        return ResponseEntity.ok(users);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<UserDto> getUser(@PathVariable Long id){
-        return ResponseEntity.ok(userService.getUserById(id));
+        User user = userService.getUserById(id);
+        return ResponseEntity.ok(UserMapper.toDto(user));
     }
 
     @PostMapping
-    public ResponseEntity<UserDto> createUser(@RequestBody UserDto user){
-        UserDto createdUser = userService.createUser(user);
-        return ResponseEntity.status(201).body(createdUser);
+    public ResponseEntity<UserDto> createUser(@Valid @RequestBody UserDto dto){
+        User user = UserMapper.toEntity(dto);
+        User createdUser = userService.createUser(user);
+        return ResponseEntity.status(201).body(UserMapper.toDto(createdUser));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<UserDto> updateUser(@PathVariable Long id,
-                                              @RequestBody UserDto user){
-        return ResponseEntity.ok(userService.updateUser(id, user));
+    public ResponseEntity<UserDto> updateUser(@PathVariable Long id, @Valid @RequestBody UserDto dto){
+        User updated = userService.updateUser(id, UserMapper.toEntity(dto));
+        return ResponseEntity.ok(UserMapper.toDto(updated));
     }
 
     @DeleteMapping("/{id}")

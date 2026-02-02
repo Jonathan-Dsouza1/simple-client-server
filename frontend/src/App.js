@@ -12,6 +12,7 @@ function App() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [editingId, setEditingId] = useState(null);
+  const [errors, setErrors] = useState({});
 
   const fetchUsers = async () => {
     const response = await getUsers();
@@ -23,15 +24,26 @@ function App() {
   }, []);
 
   const handleSubmit = async () => {
-    if(editingId){
-      await updateUser(editingId, { name, email });
-    } else {
-      await createUser({ name, email });
+    try{
+      setErrors({});
+  
+      if(editingId){
+        await updateUser(editingId, { name, email });
+      } else {
+        await createUser({ name, email });
+      }
+  
+      setName("");
+      setEmail("");
+      setEditingId(null);
+      fetchUsers();
+    } catch(error){
+      if(error.response && error.response.status === 400){
+        setErrors(error.response.data);
+      } else{
+        alert("Something went wrong");
+      }
     }
-    setName("");
-    setEmail("");
-    setEditingId(null);
-    fetchUsers();
   };
 
   const startEdit = (user) => {
@@ -54,13 +66,21 @@ function App() {
         value={name}
         onChange={e => setName(e.target.value)}
       />
+      {errors.name && (
+        <div style={{color: "red"}}>{errors.name}</div>
+      )}
 
+      <br />
       <input
         placeholder="Email"
         value={email}
         onChange={e => setEmail(e.target.value)}
       />
+      {errors.email && (
+        <div style={{color: "red"}}>{errors.email}</div>
+      )}
 
+      <br/>
       <button onClick={handleSubmit}>
         {editingId ? "Update User" : "Add User"}
       </button>
