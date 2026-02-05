@@ -1,6 +1,7 @@
 import axiosClient from "./axiosClient";
 
-export const getUsers = () => axiosClient.get("/users");
+export const getUsers = () => 
+  axiosClient.get("/users");
 
 export const createUser = (user) =>
   axiosClient.post("/users", user);
